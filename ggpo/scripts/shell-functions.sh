@@ -49,7 +49,7 @@ find_python3() {
 		fi
 	fi
 	if [ -z "${PYTHON}" ]; then
-		echo "ERROR: can't find python 2.x"
+		echo "ERROR: can't find python 3.x"
 		exit 1
 	fi
 }
