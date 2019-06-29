@@ -87,6 +87,11 @@ class Protocol:
 
     @staticmethod
     def packTLV(data):
+        try:
+            encoded = data.encode('utf-8')
+            data = encoded
+        except Exception:
+            pass
         return struct.pack("!I", len(data)) + bytes(data)
 
     @staticmethod

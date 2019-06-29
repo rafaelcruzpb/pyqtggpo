@@ -88,7 +88,7 @@ class ColorTheme:
             try:
                 qfile = QtCore.QFile(':qss/darkorange.qss')
                 if qfile.open(QtCore.QIODevice.ReadOnly | QtCore.QIODevice.Text):
-                    qss = str(qfile.readAll())
+                    qss = str(qfile.readAll(), 'utf-8')
                     qfile.close()
             except:
                 qss = ''
@@ -106,8 +106,8 @@ class ColorTheme:
             # noinspection PyBroadException
             try:
                 qfile = QtCore.QFile(':qss/fightcade.qss')
-                if qfile.open(QIODevice.ReadOnly | QIODevice.Text):
-                    qss = str(qfile.readAll())
+                if qfile.open(QtCore.QIODevice.ReadOnly | QtCore.QIODevice.Text):
+                    qss = str(qfile.readAll(), 'utf-8')
                     qfile.close()
             except:
                 qss = ''

@@ -901,7 +901,7 @@ class Controller(QtCore.QObject):
         except:
             port=6009
             #raise
-        authdata = Protocol.packTLV(username.encode('utf-8')) + Protocol.packTLV(password.encode('utf-8')) + Protocol.packInt(port) + Protocol.packInt(copyright.versionNum())
+        authdata = Protocol.packTLV(username) + Protocol.packTLV(password) + Protocol.packInt(port) + Protocol.packInt(copyright.versionNum())
         self.sendAndRemember(Protocol.AUTH, authdata)
 
     def sendCancelChallenge(self, name=None):
@@ -957,7 +957,7 @@ class Controller(QtCore.QObject):
             self.sendAuth(self.username, self.password)
             if Settings.value(Settings.AWAY):
                 self.sendToggleAFK(1)
-        self.sendAndRemember(Protocol.JOIN_CHANNEL, Protocol.packTLV(self.channel.encode('utf-8')))
+        self.sendAndRemember(Protocol.JOIN_CHANNEL, Protocol.packTLV(self.channel))
 
     def sendListChannels(self):
         self.sendAndRemember(Protocol.LIST_CHANNELS)
