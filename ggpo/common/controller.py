@@ -310,13 +310,13 @@ class Controller(QtCore.QObject):
             extrainfo = '({}) '.format(extrainfo)
         line = self.getPlayerPrefix(name, True)
         line += " challenged you - " + extrainfo
-	if "'" not in name:
-		line += "<a href='accept:" + name + "'><font color=green>accept</font></a>"
-		line += " / <a href='decline:" + name + "'><font color=green>decline</font></a>"
-	else:
-		line += '<a href="accept:' + name + '"><font color=green>accept</font></a>'
-		line += ' / <a href="decline:' + name + '"><font color=green>decline</font></a>'
-        return line
+        if "'" not in name:
+            line += "<a href='accept:" + name + "'><font color=green>accept</font></a>"
+            line += " / <a href='decline:" + name + "'><font color=green>decline</font></a>"
+        else:
+            line += '<a href="accept:' + name + '"><font color=green>accept</font></a>'
+            line += ' / <a href="decline:' + name + '"><font color=green>decline</font></a>'
+            return line
 
     def getPlayerColor(self, name):
         if name == self.username:
@@ -722,8 +722,8 @@ class Controller(QtCore.QObject):
                 dwm.DwmEnableComposition(flag)
             except:
                 self.sigStatusMessage.emit("Unable to change Desktop Composition settings on this system")
-                self.uiCompositionDisableAct.setChecked(False)
-                self.uiCompositionEnableAct.setChecked(False)
+                # self.uiCompositionDisableAct.setChecked(False)
+                # self.uiCompositionEnableAct.setChecked(False)
 
 
     def createFbaIni(self):
@@ -810,7 +810,7 @@ class Controller(QtCore.QObject):
                 devnull = open(os.devnull, 'w')
                 Popen(args, stdout=devnull, stderr=devnull)
                 devnull.close()
-        except OSError, ex:
+        except OSError as ex:
             self.sigStatusMessage.emit("Error executing " + " ".join(args) + "\n" + repr(ex))
 
         # backup FBA settings
@@ -835,8 +835,8 @@ class Controller(QtCore.QObject):
             # http://stackoverflow.com/questions/13414029/catch-interrupted-system-call-in-threading
             try:
                 inputready, outputready, exceptready = select.select(inputs, [], [], self.selectTimeout)
-            except select.error, ex:
-                if ex[0] != errno.EINTR and ex[0] != errno.EBADF:
+            except select.error as ex:
+                if ex.args[0] != errno.EINTR and ex.args[0] != errno.EBADF:
                     raise
             if not inputready:
                 self.sendPingQueries()
@@ -901,7 +901,7 @@ class Controller(QtCore.QObject):
         except:
             port=6009
             #raise
-        authdata = Protocol.packTLV(username) + Protocol.packTLV(password) + Protocol.packInt(port) + Protocol.packInt(copyright.versionNum())
+        authdata = Protocol.packTLV(username.encode()) + Protocol.packTLV(password.encode()) + Protocol.packInt(port) + Protocol.packInt(copyright.versionNum())
         self.sendAndRemember(Protocol.AUTH, authdata)
 
     def sendCancelChallenge(self, name=None):
@@ -971,7 +971,7 @@ class Controller(QtCore.QObject):
 
     def sendPingQueries(self):
         if self.udpConnected:
-            for name in self.available.keys() + self.awayfromkb.keys() + self.playing.keys():
+            for name in list(self.available.keys()) + list(self.awayfromkb.keys()) + list(self.playing.keys()):
                 p = self.players[name]
                 self.sendPingQuery(p)
 
@@ -1008,7 +1008,7 @@ class Controller(QtCore.QObject):
         Settings.setBoolean(Settings.AWAY, state)
 
     def sendWelcome(self):
-        self.sendAndRemember(Protocol.WELCOME, '\x00\x00\x00\x00\x00\x00\x00\x1d\x00\x00\x00\x01')
+        self.sendAndRemember(Protocol.WELCOME, b'\x00\x00\x00\x00\x00\x00\x00\x1d\x00\x00\x00\x01')
 
     def sendtcp(self, msg):
         # length of whole packet = length of sequence + length of msg

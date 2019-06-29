@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import cgi
 from PyQt4 import QtGui
-from PyQt4.QtCore import QFile, QIODevice
+from PyQt4 import QtCore
 from ggpo.common.settings import Settings
 
 
@@ -86,8 +86,8 @@ class ColorTheme:
             Settings.setValue(Settings.COLORTHEME, 'darkorange')
             # noinspection PyBroadException
             try:
-                qfile = QFile(':qss/darkorange.qss')
-                if qfile.open(QIODevice.ReadOnly | QIODevice.Text):
+                qfile = QtCore.QFile(':qss/darkorange.qss')
+                if qfile.open(QtCore.QIODevice.ReadOnly | QtCore.QIODevice.Text):
                     qss = str(qfile.readAll())
                     qfile.close()
             except:
@@ -105,7 +105,7 @@ class ColorTheme:
             Settings.setValue(Settings.COLORTHEME, 'fightcade')
             # noinspection PyBroadException
             try:
-                qfile = QFile(':qss/fightcade.qss')
+                qfile = QtCore.QFile(':qss/fightcade.qss')
                 if qfile.open(QIODevice.ReadOnly | QIODevice.Text):
                     qss = str(qfile.readAll())
                     qfile.close()

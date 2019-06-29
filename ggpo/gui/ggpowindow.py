@@ -7,7 +7,7 @@ import sys
 import re
 import shutil
 import time
-from colortheme import ColorTheme
+from ggpo.gui.colortheme import ColorTheme
 from PyQt4 import QtCore, QtGui
 from PyQt4.QtCore import Qt
 import ggpo.common.sound

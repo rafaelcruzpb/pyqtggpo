@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import sys
 import platform
@@ -7,11 +7,6 @@ if platform.system() == 'Darwin':
     sys.path.append("../Resources/lib/python2.7/site-packages/")
 
 import sip
-# Tell qt to return python string instead of QString
-# These are only needed for Python v2 but are harmless for Python v3.
-
-sip.setapi('QString', 2)
-sip.setapi('QVariant', 2)
 from PyQt4 import QtGui, QtCore
 QtCore.QTextCodec.setCodecForCStrings(QtCore.QTextCodec.codecForName("utf-8"))
 from ggpo.common.controller import Controller

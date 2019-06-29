@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 import json
 import os
-import urllib2
-from ggpo.common.runtime import *
+import urllib
+import urllib.request as Request
+from ggpo.common.runtime import GeoIP2Reader
 from ggpo.common.settings import Settings
 from ggpo.common.util import packagePathJoin
 
@@ -21,9 +22,9 @@ def findGeoIPDB():
 def freegeoip(ip):
     url = 'http://freegeoip.net/json/'
     try:
-        response = urllib2.urlopen(url + ip, timeout=1).read().strip()
+        response = Request.urlopen(url + ip, timeout=1).read().strip()
         return json.loads(response)
-    except urllib2.URLError:
+    except urllib.error.URLError:
         return {'areacode': '',
                 'city': '',
                 'country_code': '',

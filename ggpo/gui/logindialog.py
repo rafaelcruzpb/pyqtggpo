@@ -34,7 +34,7 @@ class LoginDialog(QtGui.QDialog, Ui_DialogLogin):
         if username:
             self.uiUsernameLine.setText(username)
         if password:
-            self.uiPasswordLine.setText(base64.decodestring(password))
+            self.uiPasswordLine.setText(str(base64.b64decode(password), 'utf-8'))
         if not username and not password:
             self.uiRegisterLink.setVisible(True)
         self.uiSavePasswordChk.toggled.connect(self.savePassword)
@@ -64,7 +64,7 @@ class LoginDialog(QtGui.QDialog, Ui_DialogLogin):
 
         if self.uiSavePasswordChk.isChecked():
             Settings.setValue(Settings.USERNAME, username)
-            Settings.setValue(Settings.PASSWORD, base64.encodestring(password))
+            Settings.setValue(Settings.PASSWORD, base64.b64encode(password.encode('utf-8')))
         else:
             Settings.setValue(Settings.USERNAME, '')
             Settings.setValue(Settings.PASSWORD, '')

@@ -87,7 +87,7 @@ class Protocol:
 
     @staticmethod
     def packTLV(data):
-        return struct.pack("!I", len(data)) + data
+        return struct.pack("!I", len(data)) + bytes(data)
 
     @staticmethod
     def extractTLV(data):

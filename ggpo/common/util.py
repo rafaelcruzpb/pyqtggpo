@@ -5,7 +5,7 @@ import logging.handlers
 import os
 import re
 import sys
-import urllib2
+import urllib.request as Request
 from collections import defaultdict
 from PyQt4 import QtGui, QtCore
 from ggpo.common.runtime import *
@@ -18,7 +18,7 @@ def checkUpdate():
     versionurl = 'https://raw.github.com/poliva/pyqtggpo/master/VERSION'
     #noinspection PyBroadException
     try:
-        response = urllib2.urlopen(versionurl, timeout=2)
+        response = Request.urlopen(versionurl, timeout=2)
         latestVersion = int(response.read().strip())
         return latestVersion - int(copyright.__version__)
     except:
