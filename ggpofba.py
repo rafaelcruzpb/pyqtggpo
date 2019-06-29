@@ -39,6 +39,13 @@ def bytes2addr( bytes ):
 	port, = struct.unpack( "H", bytes[-2:] )
 	return host, port
 
+def safeBytes(data):
+	try:
+		encoded = str.encode(data)
+		return encoded
+	except TypeError:
+		pass
+	return data
 
 def start_fba(args):
 
@@ -120,7 +127,7 @@ def puncher(sock, remote_host, port):
 			data = "%s %s" % (my_token, remote_token)
 			if remote_token != "_": data += " ok"
 			logging.debug("sending: %r" % data)
-			sock.sendto(str.encode(data), (remote_host, port))
+			sock.sendto(safeBytes(data), (remote_host, port))
 			logging.debug("sent %d" % i)
 		time.sleep(0.5)
 
@@ -140,7 +147,7 @@ def udp_proxy(args,q):
 		l_sockfd.bind(("127.0.0.1", port))
 	except socket.error:
 		logging.info("Can't bind to port 7001, using system assigned port.")
-		l_sockfd.sendto(str.encode(""), ("127.0.0.1", 7001))
+		l_sockfd.sendto(safeBytes(""), ("127.0.0.1", 7001))
 		bindaddr,port=l_sockfd.getsockname()
 		bindok+=1
 
@@ -158,7 +165,7 @@ def udp_proxy(args,q):
 		logging.info("ERROR: %s" % (repr(e)))
 		fba_pid=start_fba(args)
 		q.put(fba_pid)
-		sockfd.sendto( str.encode("useports/"+quark), master)
+		sockfd.sendto( safeBytes("useports/"+quark), master)
 		return
 
 	# bind the socket to a port, so we can test the user's NAT type
@@ -178,13 +185,13 @@ def udp_proxy(args,q):
 
 	try:
 		logging.debug("sending data to master")
-		sockfd.sendto( str.encode(quark+"/"+str(port)), master )
+		sockfd.sendto( safeBytes(quark+"/"+str(port)), master )
 	except Exception as e:
 		logging.info("Error sending data to fightcade server. Using ports.")
 		logging.info("ERROR: %s" % (repr(e)))
 		fba_pid=start_fba(args)
 		q.put(fba_pid)
-		sockfd.sendto( str.encode("useports/"+quark), master)
+		sockfd.sendto( safeBytes("useports/"+quark), master)
 		return
 
 	try:
@@ -192,33 +199,33 @@ def udp_proxy(args,q):
 		logging.debug("request received from %s = %r" % (addr, data))
 	except socket.timeout:
 		logging.info("timeout on master request, retrying.")
-		sockfd.sendto( str.encode(quark+"/"+str(port)), master )
+		sockfd.sendto( safeBytes(quark+"/"+str(port)), master )
 		data, addr = sockfd.recvfrom( len(quark)+3 )
 	except socket.error:
 		logging.info("Error receiving request from master. Using ports.")
-		sockfd.sendto( str.encode("useports/"+quark), master)
+		sockfd.sendto( safeBytes("useports/"+quark), master)
 		fba_pid=start_fba(args)
 		q.put(fba_pid)
 		return
 
-	if data != str.encode("ok "+quark):
+	if data != safeBytes("ok "+quark):
 		# print >>sys.stderr, "unable to request!"
 		logging.info("unable to request!")
 		#os._exit(1)
-	sockfd.sendto( str.encode("ok"), master )
+	sockfd.sendto( safeBytes("ok"), master )
 	logging.info("request sent, waiting for partner in quark '%s'..." % quark)
 	sockfd.settimeout(25)
 	try:
 		data, addr = sockfd.recvfrom( 6 )
 	except socket.timeout:
 		logging.info("timeout waiting for peer's address. Using ports.")
-		sockfd.sendto( str.encode("useports/"+quark), master)
+		sockfd.sendto( safeBytes("useports/"+quark), master)
 		fba_pid=start_fba(args)
 		q.put(fba_pid)
 		return
 	except socket.error:
 		logging.info("error getting peer address. Using ports.")
-		sockfd.sendto( str.encode("useports/"+quark), master)
+		sockfd.sendto( safeBytes("useports/"+quark), master)
 		fba_pid=start_fba(args)
 		q.put(fba_pid)
 		return
@@ -247,7 +254,7 @@ def udp_proxy(args,q):
 	if not punch_ok:
 		# tell the server that this quark must use ports
 		logging.info("Puncher failed. Using ports.")
-		sockfd.sendto( str.encode("useports/"+quark), master)
+		sockfd.sendto( safeBytes("useports/"+quark), master)
 
 	if restricted_nat:
 		sockfd.close()
@@ -274,21 +281,21 @@ def udp_proxy(args,q):
 
 	if emudata:
 		logging.debug("sending data to target %s = %r" % (target, emudata))
-		sockfd.sendto( str.encode(emudata), target )
+		sockfd.sendto( safeBytes(emudata), target )
 
 	try:
 		peerdata, peeraddr = sockfd.recvfrom(16384)
 		logging.debug("first request from peer at %s = %r" % (peeraddr, peerdata))
 		logging.debug("peer %s , target %s" % (peeraddr, target))
-		if peerdata and " _" in peerdata:
+		if peerdata and " _" in str(peerdata):
 			peerdata, peeraddr = sockfd.recvfrom(16384)
 			logging.debug("request from peer at %s = %r" % (peeraddr, peerdata))
-		if peerdata and " ok" in peerdata:
+		if peerdata and " ok" in str(peerdata):
 			peerdata, peeraddr = sockfd.recvfrom(16384)
 			logging.debug("request from peer at %s = %r" % (peeraddr, peerdata))
-		if peerdata and " ok" not in peerdata and " _" not in peerdata:
+		if peerdata and " ok" not in str(peerdata) and " _" not in str(peerdata):
 			logging.debug("sending data to emulator %s = %r" % (emuaddr, peerdata))
-			l_sockfd.sendto( str.encode(peerdata), emuaddr )
+			l_sockfd.sendto( safeBytes(peerdata), emuaddr )
 	except Exception as e:
 		logging.info("timeout waiting for peer")
 		logging.info("ERROR: %s" % (repr(e)))
