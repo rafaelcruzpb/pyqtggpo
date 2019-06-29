@@ -11,5 +11,5 @@ if [ $? -eq 0 ]; then
 fi
 
 . ggpo/scripts/shell-functions.sh
-find_python
+find_python3
 ${PYTHON} ./main.py 2>/dev/null &

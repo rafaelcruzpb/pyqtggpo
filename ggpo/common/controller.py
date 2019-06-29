@@ -316,7 +316,7 @@ class Controller(QtCore.QObject):
         else:
             line += '<a href="accept:' + name + '"><font color=green>accept</font></a>'
             line += ' / <a href="decline:' + name + '"><font color=green>decline</font></a>'
-            return line
+        return line
 
     def getPlayerColor(self, name):
         if name == self.username:
