@@ -61,7 +61,7 @@ class Controller(QtCore.QObject):
         self.sequence = 0x1
         self.tcpSock = None
         self.tcpConnected = False
-        self.tcpData = ''
+        self.tcpData = b''
         self.tcpReadState = self.STATE_TCP_READ_LEN
         self.tcpResponseLen = 0
         self.tcpCommandsWaitingForResponse = dict()
@@ -304,7 +304,7 @@ class Controller(QtCore.QObject):
             if p.ping:
                 extrainfo.append('{}ms'.format(p.ping))
             if p.country:
-                extrainfo.append(p.country.decode('utf-8', 'ignore'))
+                extrainfo.append(p.country)
         extrainfo = ', '.join(extrainfo)
         if extrainfo:
             extrainfo = '({}) '.format(extrainfo)
@@ -456,7 +456,7 @@ class Controller(QtCore.QObject):
         msg, data = Protocol.extractTLV(data)
         try:
             msg = msg.decode('utf-8')
-        except ValueError:
+        except AttributeError:
             msg = msg
         if Settings.value(Settings.USER_LOG_CHAT):
             loguser().info(u"<{}> {}".format(name, msg))
@@ -885,11 +885,11 @@ class Controller(QtCore.QObject):
             self.sendAndRemember(Protocol.ACCEPT_CHALLENGE, Protocol.packTLV(name) + Protocol.packTLV(self.rom))
             self.challengers.remove(name)
 
-    def sendAndForget(self, command, data=''):
+    def sendAndForget(self, command, data=b''):
         logdebug().info('Sending {} seq {} {}'.format(Protocol.codeToString(command), self.sequence, repr(data)))
         self.sendtcp(struct.pack('!I', command) + data)
 
-    def sendAndRemember(self, command, data=''):
+    def sendAndRemember(self, command, data=b''):
         logdebug().info('Sending {} seq {} {}'.format(Protocol.codeToString(command), self.sequence, repr(data)))
         self.tcpCommandsWaitingForResponse[self.sequence] = command
         self.sendtcp(struct.pack('!I', command) + data)
@@ -901,7 +901,7 @@ class Controller(QtCore.QObject):
         except:
             port=6009
             #raise
-        authdata = Protocol.packTLV(username.encode()) + Protocol.packTLV(password.encode()) + Protocol.packInt(port) + Protocol.packInt(copyright.versionNum())
+        authdata = Protocol.packTLV(username.encode('utf-8')) + Protocol.packTLV(password.encode('utf-8')) + Protocol.packInt(port) + Protocol.packInt(copyright.versionNum())
         self.sendAndRemember(Protocol.AUTH, authdata)
 
     def sendCancelChallenge(self, name=None):
@@ -957,7 +957,7 @@ class Controller(QtCore.QObject):
             self.sendAuth(self.username, self.password)
             if Settings.value(Settings.AWAY):
                 self.sendToggleAFK(1)
-        self.sendAndRemember(Protocol.JOIN_CHANNEL, Protocol.packTLV(self.channel))
+        self.sendAndRemember(Protocol.JOIN_CHANNEL, Protocol.packTLV(self.channel.encode('utf-8')))
 
     def sendListChannels(self):
         self.sendAndRemember(Protocol.LIST_CHANNELS)
@@ -1015,8 +1015,8 @@ class Controller(QtCore.QObject):
         payloadLen = 4 + len(msg)
         # noinspection PyBroadException
         try:
-            self.tcpSock.send(struct.pack('!II', payloadLen, self.sequence) + str(msg))
-        except:
+            self.tcpSock.send(struct.pack('!II', payloadLen, self.sequence) + bytes(msg))
+        except Exception:
             self.tcpConnected = False
             self.selectLoopRunning = False
             self.sigServerDisconnected.emit()

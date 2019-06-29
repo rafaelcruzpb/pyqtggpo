@@ -10,7 +10,7 @@ class PlayerNameCompletionModel(QAbstractItemModel):
         super(PlayerNameCompletionModel, self).__init__(parent)
         self.controller = None
         self._prefix = ''
-        self._data = CLI.commands.keys()
+        self._data = list(CLI.commands.keys())
         self._filtered = self._data
         self._rowcount = len(self._data)
 
@@ -49,7 +49,7 @@ class PlayerNameCompletionModel(QAbstractItemModel):
             self.dataChanged.emit(self.createIndex(0, 0), self.createIndex(self._rowcount - 1, 0))
 
     def playersLoaded(self):
-        self._data = CLI.commands.keys() + \
+        self._data = list(CLI.commands.keys()) + \
                      [p for p in self.controller.available.keys()] + \
                      [p for p, p2 in self.controller.playing.items()] + \
                      [p for p in self.controller.awayfromkb.keys()]

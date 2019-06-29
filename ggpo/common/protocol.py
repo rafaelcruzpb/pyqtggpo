@@ -99,7 +99,7 @@ class Protocol:
         """
         length = Protocol.unpackInt(data[:4])
         value = data[4:length + 4]
-        return value, data[length + 4:]
+        return str(value, 'utf-8'), data[length + 4:]
 
     @staticmethod
     def extractInt(data):
