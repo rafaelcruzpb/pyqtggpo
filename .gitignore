@@ -36,3 +36,12 @@ nosetests.xml
 .mr.developer.cfg
 .project
 .pydevproject
+
+#logs
+*.log*
+
+config/games/
+config/ggpofba-ng.ini
+config/ggpofba-ng.roms.dat
+ROMs
+.vscode/

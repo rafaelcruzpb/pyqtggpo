@@ -18,7 +18,7 @@ from ggpo.common.cliclient import CLI
 from ggpo.common.playerstate import PlayerStates
 from ggpo.common.settings import Settings
 from ggpo.common.util import logdebug, openURL, findURLs, nl2br, replaceURLs, replaceReplayID, findGamesavesDir, \
-    defaultdictinit, findFba
+    defaultdictinit, findFba, safeQtValue
 from ggpo.common.unsupportedsavestates import UnsupportedSavestates
 from ggpo.common.allgames import *
 from ggpo.gui.customemoticonsdialog import CustomEmoticonsDialog
@@ -58,7 +58,7 @@ class GGPOWindow(QtGui.QMainWindow, Ui_MainWindow):
         self.refreshListUsersTime = time.time()
         self.savestatesChecked = False
         if Settings.value(Settings.CHANNELS_FAVORITES) != None: # default value if it's not present in config file
-            self.favorites = Settings.value(Settings.CHANNELS_FAVORITES)
+            self.favorites = safeQtValue(Settings.value(Settings.CHANNELS_FAVORITES))
         else:
             self.favorites = ''
 
@@ -99,7 +99,7 @@ class GGPOWindow(QtGui.QMainWindow, Ui_MainWindow):
 
     @staticmethod
     def buildInStyleToActionName(styleName):
-        return 'ui{}ThemeAct'.format(re.sub(r'[^a-zA-Z0-9]', '', styleName))
+        return 'ui{}ThemeAct'.format(re.sub(r'[^a-zA-Z0-9]', '', safeQtValue(styleName)))
 
     def changeFont(self):
         font, ok = QtGui.QFontDialog.getFont()
@@ -165,7 +165,7 @@ class GGPOWindow(QtGui.QMainWindow, Ui_MainWindow):
 
     def joinChannel(self, *args):
         try:
-            it = self.uiChannelsTree.currentItem().text(1)
+            it = safeQtValue(self.uiChannelsTree.currentItem().text(1))
         except AttributeError:
             it = ''
         if it and len(it) > 0:
@@ -295,6 +295,8 @@ class GGPOWindow(QtGui.QMainWindow, Ui_MainWindow):
         self.updateStatusBar()
 
     def onChatReceived(self, name, txt):
+        name = safeQtValue(name)
+        txt = safeQtValue(txt)
         if name=="System" and "GAME: " in txt and Settings.value(Settings.HIDE_INGAME_CHAT):
             return
         if name=="System" and "GAME: " in txt and not Settings.value(Settings.HIDE_INGAME_CHAT):
@@ -335,7 +337,7 @@ class GGPOWindow(QtGui.QMainWindow, Ui_MainWindow):
                 pass
             self.expectFirstChannelResponse = False
 
-            self.channels = dict((c['title'], c['room']) for c in self.controller.channels.values())
+            self.channels = dict(( safeQtValue(c['title']), c['room']) for c in self.controller.channels.values())
             sortedRooms = sorted(self.channels.keys())
 
             lastChannel = Settings.value(Settings.SELECTED_CHANNEL)
@@ -398,11 +400,13 @@ class GGPOWindow(QtGui.QMainWindow, Ui_MainWindow):
             self.uiChannelsTree.itemSelectionChanged.connect(self.joinChannel)
 
     def AddRemoveFavorites(self):
-        it = self.uiChannelsTree.currentItem().text(1)
+        it = safeQtValue(self.uiChannelsTree.currentItem().text(1))
         bold_font = QtGui.QFont()
         bold_font.setBold(True)
         not_bold_font = QtGui.QFont()
         not_bold_font.setBold(False)
+
+        self.favorites = safeQtValue(self.favorites)
 
         if not("," + self.channels[it] + "," in self.favorites): # Add favorite
             self.favorites = self.favorites + "," + self.channels[it] + ","
@@ -548,25 +552,25 @@ class GGPOWindow(QtGui.QMainWindow, Ui_MainWindow):
     def restoreStateAndGeometry(self):
         saved = Settings.value(Settings.WINDOW_GEOMETRY)
         if saved:
-            self.restoreGeometry(saved)
+            self.restoreGeometry(bytes(saved))
         saved = Settings.value(Settings.WINDOW_STATE)
         if saved:
-            self.restoreState(saved)
+            self.restoreState(bytes(saved))
         saved = Settings.value(Settings.SPLITTER_STATE)
         if saved:
-            self.uiSplitter.restoreState(saved)
+            self.uiSplitter.restoreState(bytes(saved))
         saved = Settings.value(Settings.TABLE_HEADER_STATE)
         if saved:
-            self.uiPlayersTableV.horizontalHeader().restoreState(saved)
+            self.uiPlayersTableV.horizontalHeader().restoreState(bytes(saved))
         saved = Settings.value(Settings.CHANNELS_HEADER_STATE)
         if saved:
-            self.uiChannelsTree.header().restoreState(saved)
+            self.uiChannelsTree.header().restoreState(bytes(saved))
         else:
             self.uiChannelsTree.setColumnWidth(0,50)
             self.uiChannelsTree.setColumnWidth(1,300)
 
     def returnPressed(self):
-        line = self.uiChatInputEdit.text().strip()
+        line = safeQtValue(self.uiChatInputEdit.text()).strip()
         if line:
             self.uiChatInputEdit.clear()
             if line[0] == '/':
@@ -918,7 +922,7 @@ class GGPOWindow(QtGui.QMainWindow, Ui_MainWindow):
             shortcutFound = False
             ret = ''
             for c in title:
-                l = c.lower()
+                l = safeQtValue(c).lower()
                 if not shortcutFound and l in 'abcdefghijklmnopqrstuvwxy' and l not in actionTitleShortcuts:
                     ret += '&'
                     actionTitleShortcuts.add(l)

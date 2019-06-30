@@ -9,6 +9,7 @@ import struct
 import select
 import errno
 import fileinput
+import logging
 from shutil import copyfile
 from random import randint
 from subprocess import Popen
@@ -20,7 +21,7 @@ from ggpo.common.playerstate import PlayerStates
 from ggpo.common.protocol import Protocol
 from ggpo.common.settings import Settings
 from ggpo.common.unsupportedsavestates import readLocalJsonDigest
-from ggpo.common.util import findFba, logdebug, loguser, packagePathJoin, findGamesavesDir, sha256digest
+from ggpo.common.util import findFba, logdebug, loguser, packagePathJoin, findGamesavesDir, sha256digest, safeQtValue
 from ggpo.gui.colortheme import ColorTheme
 from ggpo.common import copyright
 
@@ -126,12 +127,13 @@ class Controller(QtCore.QObject):
             return False
 
     def isRomAvailable(self, channel):
+        channel = safeQtValue(channel)
         if channel=='lobby':
             # always true for lobby
             return True
-        romdir=Settings.value(Settings.ROMS_DIR)
+        romdir= safeQtValue(Settings.value(Settings.ROMS_DIR))
         if romdir:
-            rom = os.path.join(romdir, "{}.zip".format(channel))
+            rom = os.path.join(str(romdir), "{}.zip".format(channel))
             if os.path.isfile(rom):
                 return True
         rom = self.ggpoPathJoin("ROMs", "{}.zip".format(channel))
@@ -176,13 +178,15 @@ class Controller(QtCore.QObject):
             if self.tcpSock:
                 self.tcpSock.close()
             self.tcpSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.channelport = Settings.value(Settings.PORT)
+            self.channelport = safeQtValue(Settings.value(Settings.PORT))
+
             if self.channelport==None:
                 self.channelport = 7000
-                Settings.setValue(Settings.PORT, int(self.channelport))
-            self.tcpSock.connect(('ggpo-ng.com', int(self.channelport),))
+                Settings.setValue(Settings.PORT, int(safeQtValue(self.channelport)))
+            self.tcpSock.connect(('ggpo-ng.com', int(safeQtValue(self.channelport)),))
             self.tcpConnected = True
-        except Exception:
+        except Exception, e:
+            logging.error(e)
             self.sigStatusMessage.emit("Cannot connect to FightCade server")
             self.sigServerDisconnected.emit()
         return self.tcpConnected
@@ -935,6 +939,7 @@ class Controller(QtCore.QObject):
             self.challengers.remove(name)
 
     def sendJoinChannelRequest(self, channel=None):
+        channel = safeQtValue(channel)
         if channel:
             self.channel = channel
             Settings.setValue(Settings.SELECTED_CHANNEL, channel)
@@ -946,7 +951,7 @@ class Controller(QtCore.QObject):
             else:
                 logdebug().error("Invalid channel {}".format(channel))
 
-        if (int(self.channelport)!=int(self.channels[channel]['port'])):
+        if (int(self.channelport)!=int(safeQtValue(self.channels[channel]['port']))):
             self.switchingServer=True
             self.channelport = int(self.channels[channel]['port'])
             Settings.setValue(Settings.PORT, self.channelport)

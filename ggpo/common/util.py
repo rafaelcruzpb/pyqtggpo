@@ -139,6 +139,7 @@ def packagePathJoin(*args):
 
 
 def replaceURLs(text):
+    text = safeQtValue(text)
     return re.sub(r'(https?:\/\/\S+)',
                   r'<a href="\1"><font color=green>\1</font></a>', text)
 
@@ -150,3 +151,22 @@ def nl2br(s):
 
 def sha256digest(fname):
     return hashlib.sha256(open(fname, 'rb').read()).hexdigest()
+
+def safeQtValue(data):
+    try:
+        converted = data.toString()
+        return converted
+    except:
+        logging.debug('SAFEQTVALUE: toString strategy convert fail')
+        # logging.debug(data)
+    
+    try:
+        converted = str(data)
+        return converted
+    except:
+        logging.debug('SAFEQTVALUE: str strategy convert fail')
+        # logging.debug(data)
+
+    logging.error('Qt Value dont converted')
+    # logging.error(data)
+    raise 'Internal Error'

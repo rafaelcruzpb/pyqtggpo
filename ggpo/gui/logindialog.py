@@ -32,9 +32,9 @@ class LoginDialog(QtGui.QDialog, Ui_DialogLogin):
         username = Settings.value(Settings.USERNAME)
         password = Settings.value(Settings.PASSWORD)
         if username:
-            self.uiUsernameLine.setText(username)
+            self.uiUsernameLine.setText(username.toString())
         if password:
-            self.uiPasswordLine.setText(base64.decodestring(password))
+            self.uiPasswordLine.setText(base64.decodestring(password.toString()))
         if not username and not password:
             self.uiRegisterLink.setVisible(True)
         self.uiSavePasswordChk.toggled.connect(self.savePassword)
@@ -50,8 +50,8 @@ class LoginDialog(QtGui.QDialog, Ui_DialogLogin):
     def login(self):
         if not self.uiLoginBtn.isEnabled():
             return
-        username = self.uiUsernameLine.text().strip()
-        password = self.uiPasswordLine.text()
+        username = str(self.uiUsernameLine.text()).strip()
+        password = str(self.uiPasswordLine.text())
         self.uiErrorLbl.clear()
         errmsg = ''
         if not username:

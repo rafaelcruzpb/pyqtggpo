@@ -3,6 +3,7 @@ from PyQt4.QtCore import Qt, QAbstractItemModel, QModelIndex, QEvent
 from PyQt4.QtGui import QLineEdit, QCompleter
 from ggpo.common.cliclient import CLI
 from ggpo.common.playerstate import PlayerStates
+from ggpo.common.util import safeQtValue
 
 
 class PlayerNameCompletionModel(QAbstractItemModel):
@@ -159,8 +160,9 @@ class CompletionLineEdit(QLineEdit):
             self.insert(string + ' ')
 
     def keyPressEvent(self, e):
+        keyPressed = safeQtValue(e.key())
         if self._completer and self._completer.popup().isVisible():
-            if e.key() in (Qt.Key_Enter, Qt.Key_Return, Qt.Key_Escape, Qt.Key_Tab, Qt.Key_Backtab):
+            if keyPressed in (Qt.Key_Enter, Qt.Key_Return, Qt.Key_Escape, Qt.Key_Tab, Qt.Key_Backtab):
                 e.ignore()
                 return
 
@@ -169,8 +171,8 @@ class CompletionLineEdit(QLineEdit):
         if e.modifiers() & (Qt.ControlModifier | Qt.AltModifier | Qt.MetaModifier):
             return
 
-        textUnderCursor = self.textUnderCursor()
-        if not e.text() or len(textUnderCursor) < 2 or e.text()[-1] in self.NON_ALPHA:
+        textUnderCursor = safeQtValue(self.textUnderCursor())
+        if not keyPressed or len(textUnderCursor) < 2 or keyPressed[-1] in self.NON_ALPHA:
             self._completer.popup().hide()
             return
         if self._completer.update(textUnderCursor):
